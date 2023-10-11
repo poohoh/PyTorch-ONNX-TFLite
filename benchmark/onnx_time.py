@@ -1,28 +1,7 @@
 import argparse
 import time
-
 import onnxruntime as ort
 import numpy as np
-
-# model load
-# session = ort.InferenceSession("checkpoint/45.onnx")
-
-# fire detection
-# session = ort.InferenceSession("../model/fire_detection/ONNX/45.onnx", providers=["CPUExecutionProvider"])
-# session = ort.InferenceSession("../model/fire_detection/ONNX/45.onnx", providers=["CUDAExecutionProvider"])
-
-# Vehicle Detection
-# session = ort.InferenceSession("../model/230914_vd/ONNX/vd.onnx", providers=["CPUExecutionProvider"])
-# session = ort.InferenceSession("../model/230914_vd/ONNX/vd.onnx", providers=["CUDAExecutionProvider"])
-
-# License Plate Detection
-# session = ort.InferenceSession("../model/230911_lpd/ONNX/lpd.onnx", providers=["CPUExecutionProvider"])
-# session = ort.InferenceSession("../model/230911_lpd/ONNX/lpd.onnx", providers=["CUDAExecutionProvider"])
-
-# License Plate Recognition
-# session = ort.InferenceSession("../model/230918_lpr/ONNX/lpr.onnx", providers=["CPUExecutionProvider"])
-session = ort.InferenceSession("../model/230918_lpr/ONNX/lpr.onnx", providers=["CUDAExecutionProvider"])
-
 
 def get_parser():
     parser = argparse.ArgumentParser(description='onnx model benchmarking')
@@ -33,6 +12,11 @@ def get_parser():
     return parser.parse_args()
 
 def main(args):
+    if args.device == 'CPU':
+        session = ort.InferenceSession(args.onnx, providers=["CPUExecutionProvider"])
+    else:
+        session = ort.InferenceSession(args.onnx, providers=["CUDAExecutionProvider"])
+
     # run model
     sum = 0
     for i in range(10000):
