@@ -17,9 +17,15 @@ def main(args):
     else:
         session = ort.InferenceSession(args.onnx, providers=["CUDAExecutionProvider"])
 
+    # warm up
+    input_data = np.random.randn(args.batch, 3, 416, 416).astype(np.float32)
+    results = session.run(None, {'input': input_data})
+
+    iteration = 1000 // args.batch
+
     # run model
     sum = 0
-    for i in range(10000):
+    for i in range(iteration):
 
         # input data
         input_data = np.random.randn(args.batch, 3, 416, 416).astype(np.float32)
@@ -30,13 +36,15 @@ def main(args):
         end = time.time()
         sum += end - start
 
-        if i % 100 == 0:
+        if i % (iteration//10) == 0:
             print(f'i: {i}, sum: {sum}')
-    avg_elapsed = sum / 10000
+    avg_elapsed = round(sum / iteration * 1000, 2)  # ms
+    per_image = round(avg_elapsed / args.batch, 2)  # ms/image
 
     # result
-    print(results)
-    print(f'elapsed time: {avg_elapsed}')
+    # print(results)
+    print(f'avg elapsed time (per batch): {avg_elapsed} ms')
+    print(f'per image: {per_image} ms')
 
 if __name__ == '__main__':
     args = get_parser()
