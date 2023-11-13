@@ -86,6 +86,10 @@ def detect(
     # because postprocessing only supports float32
     outputs = [output.astype(np.float32) for output in outputs]
 
+    # for testing confidence threshold
+    raw_boxes = np.squeeze(outputs[0])
+    raw_scores = np.squeeze(outputs[1])
+
     # postprocess
     t4 = time.time()
     final_boxes, final_scores, final_cls_inds = get_detections(
@@ -101,7 +105,7 @@ def detect(
         f"Total         : "
         f"{t2 - t1 + (t4 - t3) / INFERENCE_STEPS + t5 - t4:.4f}s"
     )
-    return final_boxes, final_scores, final_cls_inds
+    return final_boxes, final_scores, final_cls_inds, raw_boxes, raw_scores
 
 
 def read_names(names_path):
@@ -120,12 +124,31 @@ def main(args):
     session = onnxruntime.InferenceSession(args.onnx_model, providers=PROVIDERS)
 
     # detect 1 image
-    final_boxes, final_scores, final_cls_inds = detect(
+    final_boxes, final_scores, final_cls_inds, raw_boxes, raw_scores = detect(
         session, args.img, args.score, args.nms, args.to_float16
     )
 
     # visualization
     class_names = read_names(args.names)
+
+    # for testing confidence threshold
+    cls_inds = []
+    scores = []
+    for i in range(len(raw_scores)):
+        cls_ind = np.argmax(raw_scores[i])
+        cls_inds.append(cls_ind)
+        scores.append(max(raw_scores[i]))
+    result_tmp = vis(
+        args.img,
+        raw_boxes,
+        scores,
+        cls_inds,
+        conf=0.0,
+        class_names=class_names,
+        out_img='out/onnx_result_raw.png',
+        print_bbox=True,
+    )
+
     result = vis(
         args.img,
         final_boxes,
