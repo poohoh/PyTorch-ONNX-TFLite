@@ -63,11 +63,15 @@ def detect(
         image_src, (IN_IMAGE_W, IN_IMAGE_H), interpolation=cv2.INTER_LINEAR
     )
     img_in = cv2.cvtColor(resized, cv2.COLOR_BGR2RGB)
+    img_tmp = np.copy(img_in)
+    img_tmp = cv2.cvtColor(img_tmp, cv2.COLOR_RGB2BGR)
     img_in = np.transpose(img_in, (2, 0, 1)).astype(np.float32)  # HWC to CHW
     img_in /= 255.0
     img_in = np.expand_dims(img_in, axis=0)
     if to_float16:
         img_in = img_in.astype(np.float16)
+
+    cv2.imwrite('C:/Users/KimJunha/Desktop/portfolio/yolo/input_image.png', img_tmp)
 
     # warm-up
     t2 = time.time()
