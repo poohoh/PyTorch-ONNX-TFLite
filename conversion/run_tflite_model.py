@@ -60,6 +60,7 @@ def main(args):
     # output_data = interpreter.get_tensor(output_details[0]['index'])
     # print(output_data)
 
+    output = interpreter.get_tensor(output_details[0]['index'])
     boxes = np.squeeze(interpreter.get_tensor(output_details[0]['index']))
     confs = np.squeeze(interpreter.get_tensor(output_details[1]['index']))
     out = {}
@@ -83,6 +84,20 @@ def main(args):
     cv2.imshow('result', result)
     cv2.waitKey()
     cv2.destroyAllWindows()
+
+    # cv2.imwrite('./data/test5_result.png', result)
+
+    # print_tflite_model_tensor_types(interpreter)
+
+def print_tflite_model_tensor_types(interpreter):
+    # get tensor details
+    tensor_details = interpreter.get_tensor_details()
+
+    # print all tensors
+    for tensor in tensor_details:
+        name = tensor['name']
+        dtype = tensor['dtype']
+        print(f'Tensor Name: {name}, Data Type: {dtype}')
 
 if __name__=='__main__':
     args = get_parser()
